@@ -306,12 +306,15 @@ function ScheduleView({ userId }: { userId: string }) {
   const [day, setDay] = useState("1");
   const [time, setTime] = useState("19:00");
   const [duration, setDuration] = useState("30");
+  const [remind, setRemind] = useState("0");
 
   const add = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("schedule_slots").insert({
         user_id: userId, subject_id: subjectId,
-        day_of_week: Number(day), start_time: time, duration_minutes: Number(duration),
+        day_of_week: Number(day), start_time: time,
+        duration_minutes: Number(duration),
+        reminder_minutes: Number(remind),
       });
       if (error) throw error;
     },
