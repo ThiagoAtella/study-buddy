@@ -372,6 +372,19 @@ function ScheduleView({ userId }: { userId: string }) {
                   <Input type="number" min={5} value={duration} onChange={(e) => setDuration(e.target.value)} />
                 </div>
               </div>
+              <div>
+                <Label>Avisar antes (min)</Label>
+                <Select value={remind} onValueChange={setRemind}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No horário exato</SelectItem>
+                    <SelectItem value="5">5 minutos antes</SelectItem>
+                    <SelectItem value="10">10 minutos antes</SelectItem>
+                    <SelectItem value="15">15 minutos antes</SelectItem>
+                    <SelectItem value="30">30 minutos antes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
               <Button onClick={() => add.mutate()} disabled={!subjectId}>Salvar</Button>
