@@ -421,69 +421,6 @@ function ScheduleView({ userId }: { userId: string }) {
   );
 }
 
-/* ---------- Progresso ---------- */
-function ProgressView() {
-  const { data: subjects = [] } = useQuery({
-    queryKey: ["subjects"],
-    queryFn: async () => (await supabase.from("subjects").select("*")).data ?? [],
-  });
-  const { data: topics = [] } = useQuery({
-    queryKey: ["topics"],
-    queryFn: async () => (await supabase.from("topics").select("*")).data ?? [],
-  });
-
-  const total = topics.length;
-  const done = topics.filter((t) => t.completed).length;
-  const pct = total ? Math.round((done / total) * 100) : 0;
-
-  const last7 = topics.filter((t) => t.completed && t.completed_at &&
-    new Date(t.completed_at).getTime() > Date.now() - 7 * 86400000).length;
-
-  return (
-    <div className="space-y-8">
-      <div className="grid md:grid-cols-3 gap-4">
-        <Stat label="Tópicos concluídos" value={`${done}/${total}`} />
-        <Stat label="Progresso geral" value={`${pct}%`} />
-        <Stat label="Últimos 7 dias" value={String(last7)} />
-      </div>
-
-      <div>
-        <h3 className="font-display text-2xl mb-4">Por matéria</h3>
-        <div className="space-y-3">
-          {subjects.map((s) => {
-            const st = topics.filter((t) => t.subject_id === s.id);
-            const sd = st.filter((t) => t.completed).length;
-            const sp = st.length ? (sd / st.length) * 100 : 0;
-            return (
-              <div key={s.id} className="border border-border bg-card p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium flex items-center gap-2">
-                    <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
-                    {s.name}
-                  </span>
-                  <span className="text-muted-foreground">{sd}/{st.length}</span>
-                </div>
-                <div className="h-1.5 bg-muted overflow-hidden">
-                  <div className="h-full bg-foreground transition-all" style={{ width: `${sp}%` }} />
-                </div>
-              </div>
-            );
-          })}
-          {subjects.length === 0 && <p className="text-muted-foreground italic">Adicione matérias para acompanhar progresso.</p>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border border-border bg-card p-6">
-      <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">{label}</p>
-      <p className="font-display text-5xl mt-2">{value}</p>
-    </div>
-  );
-}
 
 /* ---------- Recomendações ---------- */
 function LinksView({ userId }: { userId: string }) {
