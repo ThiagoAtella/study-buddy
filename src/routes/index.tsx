@@ -14,6 +14,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Plus, Trash2, BellRing, LogOut, ExternalLink, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { ensureNotificationPermission, startScheduleWatcher } from "@/lib/notifications";
+import { Pomodoro } from "@/components/Pomodoro";
+import { GoalsView } from "@/components/GoalsView";
+import { FlashcardsView } from "@/components/FlashcardsView";
+import { StatsView } from "@/components/StatsView";
+import { AiSuggestView } from "@/components/AiSuggestView";
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
@@ -93,12 +98,16 @@ function Dashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <Tabs defaultValue="subjects">
-          <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 mb-8 gap-6">
+        <Tabs defaultValue="pomodoro">
+          <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 mb-8 gap-6 flex-wrap">
             {[
+              ["pomodoro", "Pomodoro"],
               ["subjects", "Matérias"],
               ["schedule", "Cronograma"],
-              ["progress", "Progresso"],
+              ["goals", "Metas"],
+              ["flashcards", "Flashcards"],
+              ["stats", "Estatísticas"],
+              ["ai", "IA"],
               ["links", "Recomendações"],
             ].map(([v, l]) => (
               <TabsTrigger
@@ -111,9 +120,13 @@ function Dashboard() {
             ))}
           </TabsList>
 
+          <TabsContent value="pomodoro"><Pomodoro userId={user.id} /></TabsContent>
           <TabsContent value="subjects"><SubjectsView userId={user.id} /></TabsContent>
           <TabsContent value="schedule"><ScheduleView userId={user.id} /></TabsContent>
-          <TabsContent value="progress"><ProgressView /></TabsContent>
+          <TabsContent value="goals"><GoalsView userId={user.id} /></TabsContent>
+          <TabsContent value="flashcards"><FlashcardsView userId={user.id} /></TabsContent>
+          <TabsContent value="stats"><StatsView /></TabsContent>
+          <TabsContent value="ai"><AiSuggestView userId={user.id} /></TabsContent>
           <TabsContent value="links"><LinksView userId={user.id} /></TabsContent>
         </Tabs>
       </main>
