@@ -14,6 +14,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Plus, Trash2, BellRing, LogOut, ExternalLink, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { ensureNotificationPermission, startScheduleWatcher } from "@/lib/notifications";
+import { Pomodoro } from "@/components/Pomodoro";
+import { GoalsView } from "@/components/GoalsView";
+import { FlashcardsView } from "@/components/FlashcardsView";
+import { StatsView } from "@/components/StatsView";
+import { AiSuggestView } from "@/components/AiSuggestView";
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
@@ -93,12 +98,16 @@ function Dashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <Tabs defaultValue="subjects">
-          <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 mb-8 gap-6">
+        <Tabs defaultValue="pomodoro">
+          <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 mb-8 gap-6 flex-wrap">
             {[
+              ["pomodoro", "Pomodoro"],
               ["subjects", "Matérias"],
               ["schedule", "Cronograma"],
-              ["progress", "Progresso"],
+              ["goals", "Metas"],
+              ["flashcards", "Flashcards"],
+              ["stats", "Estatísticas"],
+              ["ai", "IA"],
               ["links", "Recomendações"],
             ].map(([v, l]) => (
               <TabsTrigger
@@ -111,9 +120,13 @@ function Dashboard() {
             ))}
           </TabsList>
 
+          <TabsContent value="pomodoro"><Pomodoro userId={user.id} /></TabsContent>
           <TabsContent value="subjects"><SubjectsView userId={user.id} /></TabsContent>
           <TabsContent value="schedule"><ScheduleView userId={user.id} /></TabsContent>
-          <TabsContent value="progress"><ProgressView /></TabsContent>
+          <TabsContent value="goals"><GoalsView userId={user.id} /></TabsContent>
+          <TabsContent value="flashcards"><FlashcardsView userId={user.id} /></TabsContent>
+          <TabsContent value="stats"><StatsView /></TabsContent>
+          <TabsContent value="ai"><AiSuggestView userId={user.id} /></TabsContent>
           <TabsContent value="links"><LinksView userId={user.id} /></TabsContent>
         </Tabs>
       </main>
@@ -293,12 +306,15 @@ function ScheduleView({ userId }: { userId: string }) {
   const [day, setDay] = useState("1");
   const [time, setTime] = useState("19:00");
   const [duration, setDuration] = useState("30");
+  const [remind, setRemind] = useState("0");
 
   const add = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("schedule_slots").insert({
         user_id: userId, subject_id: subjectId,
-        day_of_week: Number(day), start_time: time, duration_minutes: Number(duration),
+        day_of_week: Number(day), start_time: time,
+        duration_minutes: Number(duration),
+        reminder_minutes: Number(remind),
       });
       if (error) throw error;
     },
@@ -356,6 +372,19 @@ function ScheduleView({ userId }: { userId: string }) {
                   <Input type="number" min={5} value={duration} onChange={(e) => setDuration(e.target.value)} />
                 </div>
               </div>
+              <div>
+                <Label>Avisar antes (min)</Label>
+                <Select value={remind} onValueChange={setRemind}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No horário exato</SelectItem>
+                    <SelectItem value="5">5 minutos antes</SelectItem>
+                    <SelectItem value="10">10 minutos antes</SelectItem>
+                    <SelectItem value="15">15 minutos antes</SelectItem>
+                    <SelectItem value="30">30 minutos antes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
               <Button onClick={() => add.mutate()} disabled={!subjectId}>Salvar</Button>
@@ -392,69 +421,6 @@ function ScheduleView({ userId }: { userId: string }) {
   );
 }
 
-/* ---------- Progresso ---------- */
-function ProgressView() {
-  const { data: subjects = [] } = useQuery({
-    queryKey: ["subjects"],
-    queryFn: async () => (await supabase.from("subjects").select("*")).data ?? [],
-  });
-  const { data: topics = [] } = useQuery({
-    queryKey: ["topics"],
-    queryFn: async () => (await supabase.from("topics").select("*")).data ?? [],
-  });
-
-  const total = topics.length;
-  const done = topics.filter((t) => t.completed).length;
-  const pct = total ? Math.round((done / total) * 100) : 0;
-
-  const last7 = topics.filter((t) => t.completed && t.completed_at &&
-    new Date(t.completed_at).getTime() > Date.now() - 7 * 86400000).length;
-
-  return (
-    <div className="space-y-8">
-      <div className="grid md:grid-cols-3 gap-4">
-        <Stat label="Tópicos concluídos" value={`${done}/${total}`} />
-        <Stat label="Progresso geral" value={`${pct}%`} />
-        <Stat label="Últimos 7 dias" value={String(last7)} />
-      </div>
-
-      <div>
-        <h3 className="font-display text-2xl mb-4">Por matéria</h3>
-        <div className="space-y-3">
-          {subjects.map((s) => {
-            const st = topics.filter((t) => t.subject_id === s.id);
-            const sd = st.filter((t) => t.completed).length;
-            const sp = st.length ? (sd / st.length) * 100 : 0;
-            return (
-              <div key={s.id} className="border border-border bg-card p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium flex items-center gap-2">
-                    <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
-                    {s.name}
-                  </span>
-                  <span className="text-muted-foreground">{sd}/{st.length}</span>
-                </div>
-                <div className="h-1.5 bg-muted overflow-hidden">
-                  <div className="h-full bg-foreground transition-all" style={{ width: `${sp}%` }} />
-                </div>
-              </div>
-            );
-          })}
-          {subjects.length === 0 && <p className="text-muted-foreground italic">Adicione matérias para acompanhar progresso.</p>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border border-border bg-card p-6">
-      <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">{label}</p>
-      <p className="font-display text-5xl mt-2">{value}</p>
-    </div>
-  );
-}
 
 /* ---------- Recomendações ---------- */
 function LinksView({ userId }: { userId: string }) {

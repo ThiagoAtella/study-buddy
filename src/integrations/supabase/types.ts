@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      flashcards: {
+        Row: {
+          back: string
+          created_at: string
+          due_at: string
+          ease_factor: number
+          front: string
+          id: string
+          interval_days: number
+          last_reviewed_at: string | null
+          repetitions: number
+          subject_id: string | null
+          user_id: string
+        }
+        Insert: {
+          back: string
+          created_at?: string
+          due_at?: string
+          ease_factor?: number
+          front: string
+          id?: string
+          interval_days?: number
+          last_reviewed_at?: string | null
+          repetitions?: number
+          subject_id?: string | null
+          user_id: string
+        }
+        Update: {
+          back?: string
+          created_at?: string
+          due_at?: string
+          ease_factor?: number
+          front?: string
+          id?: string
+          interval_days?: number
+          last_reviewed_at?: string | null
+          repetitions?: number
+          subject_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       recommended_links: {
         Row: {
           created_at: string
@@ -58,6 +100,7 @@ export type Database = {
           day_of_week: number
           duration_minutes: number
           id: string
+          reminder_minutes: number
           start_time: string
           subject_id: string
           user_id: string
@@ -67,6 +110,7 @@ export type Database = {
           day_of_week: number
           duration_minutes?: number
           id?: string
+          reminder_minutes?: number
           start_time: string
           subject_id: string
           user_id: string
@@ -76,6 +120,7 @@ export type Database = {
           day_of_week?: number
           duration_minutes?: number
           id?: string
+          reminder_minutes?: number
           start_time?: string
           subject_id?: string
           user_id?: string
@@ -192,6 +237,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      weekly_goals: {
+        Row: {
+          created_at: string
+          id: string
+          minutes_per_week: number
+          subject_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          minutes_per_week?: number
+          subject_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          minutes_per_week?: number
+          subject_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
