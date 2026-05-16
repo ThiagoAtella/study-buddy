@@ -19,6 +19,8 @@ import { GoalsView } from "@/components/GoalsView";
 import { FlashcardsView } from "@/components/FlashcardsView";
 import { StatsView } from "@/components/StatsView";
 import { AiSuggestView } from "@/components/AiSuggestView";
+import { QuizView } from "@/components/QuizView";
+import { TutorView } from "@/components/TutorView";
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
@@ -106,8 +108,10 @@ function Dashboard() {
               ["schedule", "Cronograma"],
               ["goals", "Metas"],
               ["flashcards", "Flashcards"],
+              ["quiz", "Quiz"],
+              ["tutor", "Tutor IA"],
               ["stats", "Estatísticas"],
-              ["ai", "IA"],
+              ["ai", "Sugestões"],
               ["links", "Recomendações"],
             ].map(([v, l]) => (
               <TabsTrigger
@@ -125,6 +129,8 @@ function Dashboard() {
           <TabsContent value="schedule"><ScheduleView userId={user.id} /></TabsContent>
           <TabsContent value="goals"><GoalsView userId={user.id} /></TabsContent>
           <TabsContent value="flashcards"><FlashcardsView userId={user.id} /></TabsContent>
+          <TabsContent value="quiz"><QuizView /></TabsContent>
+          <TabsContent value="tutor"><TutorView /></TabsContent>
           <TabsContent value="stats"><StatsView /></TabsContent>
           <TabsContent value="ai"><AiSuggestView userId={user.id} /></TabsContent>
           <TabsContent value="links"><LinksView userId={user.id} /></TabsContent>
