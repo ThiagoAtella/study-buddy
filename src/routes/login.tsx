@@ -1,21 +1,39 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { CheckCircle2 } from "lucide-react";
+import { z } from "zod";
+
+const searchSchema = z.object({
+  confirmed: z.string().optional(),
+});
 
 export const Route = createFileRoute("/login")({
+  validateSearch: searchSchema,
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/login" });
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailConfirmed, setEmailConfirmed] = useState(
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("confirmed") === "true"
+      : search.confirmed === "true",
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("confirmed") === "true") setEmailConfirmed(true);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -29,8 +47,11 @@ function LoginPage() {
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: window.location.origin },
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
+          },
         });
         if (error) throw error;
         toast.success("Conta criada! Verifique seu e-mail para confirmar.");
@@ -56,6 +77,13 @@ function LoginPage() {
           </p>
         </Link>
 
+        {emailConfirmed && (
+          <div className="flex items-start gap-3 border border-green-200 bg-green-50 text-green-800 rounded px-4 py-3 mb-4 text-sm">
+            <CheckCircle2 className="size-4 mt-0.5 shrink-0" />
+            <span>E-mail confirmado com sucesso! Faça login para continuar.</span>
+          </div>
+        )}
+
         <div className="border border-border bg-card p-8">
           <h2 className="font-display text-2xl mb-6">
             {mode === "login" ? "Entrar" : "Criar conta"}
@@ -63,23 +91,49 @@ function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div>
               <Label htmlFor="password">Senha</Label>
-              <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input
+                id="password"
+                type="password"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {mode === "signup" && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Mínimo 6 caracteres. Use letras e números para maior segurança.
+                </p>
+              )}
             </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? "..." : mode === "login" ? "Entrar" : "Cadastrar"}
             </Button>
           </form>
 
-          <button
-            onClick={() => setMode(mode === "login" ? "signup" : "login")}
-            className="mt-6 w-full text-sm text-muted-foreground hover:text-foreground underline underline-offset-4"
-          >
-            {mode === "login" ? "Não tem conta? Cadastre-se" : "Já tem conta? Entre"}
-          </button>
+          <div className="mt-6 pt-5 border-t border-border text-center">
+            <span className="text-sm text-muted-foreground">
+              {mode === "login" ? "Não tem conta?" : "Já tem conta?"}
+            </span>{" "}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "login" ? "signup" : "login")}
+              className="text-sm font-medium text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity"
+            >
+              {mode === "login" ? "Cadastre-se" : "Entre"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
