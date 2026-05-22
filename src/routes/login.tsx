@@ -37,7 +37,14 @@ function LoginPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (!data.session) return;
+      // If we're on the confirmation landing page, sign out the auto-created
+      // session so the user must log in explicitly (security requirement).
+      if (new URLSearchParams(window.location.search).get("confirmed") === "true") {
+        supabase.auth.signOut();
+        return;
+      }
+      navigate({ to: "/" });
     });
   }, [navigate]);
 
