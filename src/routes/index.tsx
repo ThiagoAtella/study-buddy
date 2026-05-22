@@ -101,30 +101,28 @@ function Dashboard() {
 
       <main className="max-w-6xl mx-auto px-6 py-10">
         <Tabs defaultValue="pomodoro">
-          <div className="overflow-x-auto -mx-6 px-6 mb-8">
-            <TabsList className="bg-transparent border-b border-border w-max min-w-full justify-start rounded-none h-auto p-0 gap-6 flex-nowrap">
-              {[
-                ["pomodoro", "Pomodoro"],
-                ["subjects", "Matérias"],
-                ["schedule", "Cronograma"],
-                ["goals", "Metas"],
-                ["flashcards", "Flashcards"],
-                ["quiz", "Quiz"],
-                ["tutor", "Tutor IA"],
-                ["stats", "Estatísticas"],
-                ["ai", "Sugestões"],
-                ["links", "Recomendações"],
-              ].map(([v, l]) => (
-                <TabsTrigger
-                  key={v}
-                  value={v}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:shadow-none bg-transparent px-0 pb-3 font-display text-lg whitespace-nowrap"
-                >
-                  {l}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+          <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 mb-8 gap-6 flex-wrap">
+            {[
+              ["pomodoro", "Pomodoro"],
+              ["subjects", "Matérias"],
+              ["schedule", "Cronograma"],
+              ["goals", "Metas"],
+              ["flashcards", "Flashcards"],
+              ["quiz", "Quiz"],
+              ["tutor", "Tutor IA"],
+              ["stats", "Estatísticas"],
+              ["ai", "Sugestões"],
+              ["links", "Recomendações"],
+            ].map(([v, l]) => (
+              <TabsTrigger
+                key={v}
+                value={v}
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:shadow-none bg-transparent px-0 pb-3 font-display text-lg"
+              >
+                {l}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
           <TabsContent value="pomodoro"><Pomodoro userId={user.id} /></TabsContent>
           <TabsContent value="subjects"><SubjectsView userId={user.id} /></TabsContent>
