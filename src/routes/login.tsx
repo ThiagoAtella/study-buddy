@@ -70,7 +70,7 @@ function LoginPage() {
     try {
       if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/login?confirmed=true`,
+          redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
         setResetSent(true);
@@ -94,6 +94,13 @@ function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setResetSent(false);
+    setEmail("");
+    setPassword("");
   };
 
   return (
