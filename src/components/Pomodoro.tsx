@@ -74,12 +74,16 @@ export function Pomodoro({ userId }: { userId: string }) {
       setSecondsLeft(FOCUS);
     }
     startedAtRef.current = null;
+    endsAtRef.current = null;
   }
 
   function toggle() {
     if (!running) {
       ensureNotificationPermission();
       startedAtRef.current = Date.now();
+      endsAtRef.current = Date.now() + secondsLeft * 1000;
+    } else {
+      endsAtRef.current = null;
     }
     setRunning((r) => !r);
   }
@@ -88,6 +92,7 @@ export function Pomodoro({ userId }: { userId: string }) {
     setRunning(false);
     setSecondsLeft(mode === "focus" ? FOCUS : BREAK);
     startedAtRef.current = null;
+    endsAtRef.current = null;
   }
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
