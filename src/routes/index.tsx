@@ -115,6 +115,7 @@ function Dashboard() {
               ["pomodoro", "Pomodoro"],
               ["subjects", "Matérias"],
               ["schedule", "Cronograma"],
+              ["calendar", "Calendário"],
               ["goals", "Metas"],
               ["flashcards", "Flashcards"],
               ["quiz", "Quiz"],
@@ -136,6 +137,7 @@ function Dashboard() {
           <TabsContent value="pomodoro"><Pomodoro userId={user.id} /></TabsContent>
           <TabsContent value="subjects"><SubjectsView userId={user.id} /></TabsContent>
           <TabsContent value="schedule"><ScheduleView userId={user.id} /></TabsContent>
+          <TabsContent value="calendar"><CalendarView /></TabsContent>
           <TabsContent value="goals"><GoalsView userId={user.id} /></TabsContent>
           <TabsContent value="flashcards"><FlashcardsView userId={user.id} /></TabsContent>
           <TabsContent value="quiz"><QuizView /></TabsContent>
