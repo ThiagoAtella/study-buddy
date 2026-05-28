@@ -85,6 +85,7 @@ function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <StreakBadge />
             <Button
               variant={notifGranted ? "secondary" : "default"}
               size="sm"
@@ -96,7 +97,11 @@ function Dashboard() {
                 {notifGranted ? "Notificações ativas" : "Ativar avisos"}
               </span>
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
+            <Button variant="ghost" size="icon" onClick={exportAllData} title="Exportar dados (CSV)">
+              <Download className="size-4" />
+            </Button>
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()} title="Sair">
               <LogOut className="size-4" />
             </Button>
           </div>
