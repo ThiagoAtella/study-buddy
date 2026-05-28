@@ -22,20 +22,26 @@ export function Pomodoro({ userId }: { userId: string }) {
   const [secondsLeft, setSecondsLeft] = useState(FOCUS);
   const [running, setRunning] = useState(false);
   const startedAtRef = useRef<number | null>(null);
+  const endsAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!running) return;
-    const id = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          clearInterval(id);
-          finish();
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
+    if (endsAtRef.current == null) {
+      endsAtRef.current = Date.now() + secondsLeft * 1000;
+    }
+    const tick = () => {
+      const remaining = Math.max(0, Math.round(((endsAtRef.current ?? 0) - Date.now()) / 1000));
+      setSecondsLeft(remaining);
+      if (remaining <= 0) finish();
+    };
+    tick();
+    const id = setInterval(tick, 250);
+    const onVis = () => { if (!document.hidden) tick(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
 
