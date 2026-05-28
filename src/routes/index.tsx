@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, BellRing, LogOut, ExternalLink, Bell } from "lucide-react";
+import { Plus, Trash2, BellRing, LogOut, ExternalLink, Bell, Download } from "lucide-react";
 import { toast } from "sonner";
 import { ensureNotificationPermission, startScheduleWatcher } from "@/lib/notifications";
 import { Pomodoro } from "@/components/Pomodoro";
@@ -21,6 +21,10 @@ import { StatsView } from "@/components/StatsView";
 import { AiSuggestView } from "@/components/AiSuggestView";
 import { QuizView } from "@/components/QuizView";
 import { TutorView } from "@/components/TutorView";
+import { CalendarView } from "@/components/CalendarView";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { StreakBadge } from "@/components/StreakBadge";
+import { exportAllData } from "@/lib/export";
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
@@ -81,6 +85,7 @@ function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <StreakBadge />
             <Button
               variant={notifGranted ? "secondary" : "default"}
               size="sm"
@@ -92,7 +97,11 @@ function Dashboard() {
                 {notifGranted ? "Notificações ativas" : "Ativar avisos"}
               </span>
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
+            <Button variant="ghost" size="icon" onClick={exportAllData} title="Exportar dados (CSV)">
+              <Download className="size-4" />
+            </Button>
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()} title="Sair">
               <LogOut className="size-4" />
             </Button>
           </div>
@@ -106,6 +115,7 @@ function Dashboard() {
               ["pomodoro", "Pomodoro"],
               ["subjects", "Matérias"],
               ["schedule", "Cronograma"],
+              ["calendar", "Calendário"],
               ["goals", "Metas"],
               ["flashcards", "Flashcards"],
               ["quiz", "Quiz"],
@@ -127,6 +137,7 @@ function Dashboard() {
           <TabsContent value="pomodoro"><Pomodoro userId={user.id} /></TabsContent>
           <TabsContent value="subjects"><SubjectsView userId={user.id} /></TabsContent>
           <TabsContent value="schedule"><ScheduleView userId={user.id} /></TabsContent>
+          <TabsContent value="calendar"><CalendarView /></TabsContent>
           <TabsContent value="goals"><GoalsView userId={user.id} /></TabsContent>
           <TabsContent value="flashcards"><FlashcardsView userId={user.id} /></TabsContent>
           <TabsContent value="quiz"><QuizView /></TabsContent>

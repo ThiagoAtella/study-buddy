@@ -60,6 +60,30 @@
   --ring: oklch(0.18 0 0);
 }
 
+.dark {
+  --paper: oklch(0.16 0.005 85);
+  --ink: oklch(0.96 0.008 85);
+  --background: oklch(0.16 0.005 85);
+  --foreground: oklch(0.96 0.008 85);
+  --card: oklch(0.21 0.006 85);
+  --card-foreground: oklch(0.96 0.008 85);
+  --popover: oklch(0.21 0.006 85);
+  --popover-foreground: oklch(0.96 0.008 85);
+  --primary: oklch(0.96 0.008 85);
+  --primary-foreground: oklch(0.16 0.005 85);
+  --secondary: oklch(0.26 0.008 85);
+  --secondary-foreground: oklch(0.96 0.008 85);
+  --muted: oklch(0.26 0.008 85);
+  --muted-foreground: oklch(0.68 0.006 85);
+  --accent: oklch(0.30 0.01 85);
+  --accent-foreground: oklch(0.96 0.008 85);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.96 0.008 85);
+  --border: oklch(0.32 0.008 85);
+  --input: oklch(0.32 0.008 85);
+  --ring: oklch(0.96 0.008 85);
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   html, body {
