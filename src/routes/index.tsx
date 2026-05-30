@@ -22,6 +22,8 @@ import { AiSuggestView } from "@/components/AiSuggestView";
 import { QuizView } from "@/components/QuizView";
 import { TutorView } from "@/components/TutorView";
 import { CalendarView } from "@/components/CalendarView";
+import { TasksView } from "@/components/TasksView";
+import { NotesView } from "@/components/NotesView";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StreakBadge } from "@/components/StreakBadge";
 import { exportAllData } from "@/lib/export";
