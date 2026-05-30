@@ -112,9 +112,10 @@ export function TasksView({ userId }: { userId: string }) {
 
   const move = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const patch: Record<string, unknown> = { status };
-      patch.completed_at = status === "done" ? new Date().toISOString() : null;
-      const { error } = await supabase.from("tasks").update(patch).eq("id", id);
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status, completed_at: status === "done" ? new Date().toISOString() : null })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
