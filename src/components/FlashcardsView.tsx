@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Sparkles, Lightbulb } from "lucide-react";
+import { ConfirmDelete } from "@/components/ui/confirm-delete";
+import { Plus, Trash2, Sparkles, Lightbulb, Brain } from "lucide-react";
 import { sm2 } from "@/lib/sm2";
 import { toast } from "sonner";
 
@@ -45,7 +46,11 @@ export function FlashcardsView({ userId }: { userId: string }) {
         subject_id: subjectId || null,
       });
     },
-    onSuccess: () => { setOpen(false); setFront(""); setBack(""); setSubjectId(""); qc.invalidateQueries({ queryKey: ["flashcards"] }); toast.success("Cartão criado"); },
+    onSuccess: () => {
+      setOpen(false); setFront(""); setBack(""); setSubjectId("");
+      qc.invalidateQueries({ queryKey: ["flashcards"] });
+      toast.success("Cartão criado");
+    },
   });
 
   const aiGen = useMutation({
@@ -104,7 +109,9 @@ export function FlashcardsView({ userId }: { userId: string }) {
       <div className="flex justify-between items-center gap-3 flex-wrap">
         <div>
           <h3 className="font-display text-2xl">Revisão</h3>
-          <p className="text-sm text-muted-foreground">{dueCards.length} cartão(ões) para revisar agora · {cards.length} no total</p>
+          <p className="text-sm text-muted-foreground">
+            {dueCards.length} cartão(ões) para revisar agora · {cards.length} no total
+          </p>
         </div>
         <div className="flex gap-2">
           <Dialog open={aiOpen} onOpenChange={setAiOpen}>
@@ -188,7 +195,9 @@ export function FlashcardsView({ userId }: { userId: string }) {
 
               {explanation ? (
                 <div className="mt-5 border-t border-border pt-5">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2 flex items-center gap-1.5"><Lightbulb className="size-3.5" /> Explicação da IA</p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <Lightbulb className="size-3.5" /> Explicação da IA
+                  </p>
                   <div className="text-sm whitespace-pre-wrap leading-relaxed">{explanation}</div>
                 </div>
               ) : (
@@ -209,8 +218,18 @@ export function FlashcardsView({ userId }: { userId: string }) {
           )}
         </div>
       ) : (
-        <div className="text-center py-10 text-muted-foreground italic">
-          {cards.length === 0 ? "Nenhum cartão ainda. Crie o primeiro ou gere com IA." : "Nada para revisar agora. Volte mais tarde."}
+        <div className="max-w-xl mx-auto text-center py-14 border border-dashed border-border rounded">
+          <Brain className="size-12 mx-auto text-muted-foreground opacity-30 mb-3" />
+          <p className="text-muted-foreground italic">
+            {cards.length === 0
+              ? "Nenhum cartão ainda. Crie o primeiro ou gere com IA."
+              : "Nada para revisar agora. Volte mais tarde! 🎉"}
+          </p>
+          {cards.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Próxima revisão: {new Date(cards[0]?.due_at).toLocaleDateString("pt-BR")}
+            </p>
+          )}
         </div>
       )}
 
@@ -218,17 +237,25 @@ export function FlashcardsView({ userId }: { userId: string }) {
         <div>
           <h4 className="font-display text-xl mb-3">Todos os cartões</h4>
           <ul className="space-y-1.5">
-            {cards.map((c: any) => (
-              <li key={c.id} className="flex items-center justify-between text-sm border-b border-border py-2 group">
-                <span className="truncate">{c.front}</span>
-                <span className="flex items-center gap-3 text-xs text-muted-foreground">
-                  próx. {new Date(c.due_at).toLocaleDateString("pt-BR")}
-                  <button onClick={() => del.mutate(c.id)} className="opacity-0 group-hover:opacity-100">
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </span>
-              </li>
-            ))}
+            {cards.map((c: any) => {
+              const subj = subjects.find((s: any) => s.id === c.subject_id);
+              return (
+                <li key={c.id} className="flex items-center justify-between text-sm border-b border-border py-2 group">
+                  <div className="flex items-center gap-2 truncate min-w-0">
+                    {subj && <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: subj.color }} />}
+                    <span className="truncate">{c.front}</span>
+                  </div>
+                  <span className="flex items-center gap-3 text-xs text-muted-foreground shrink-0 ml-2">
+                    próx. {new Date(c.due_at).toLocaleDateString("pt-BR")}
+                    <ConfirmDelete onConfirm={() => del.mutate(c.id)} description={`Excluir este cartão?`}>
+                      <button className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-colors">
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </ConfirmDelete>
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

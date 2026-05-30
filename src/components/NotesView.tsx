@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, FileText, Eye, Pencil, Search } from "lucide-react";
+import { ConfirmDelete } from "@/components/ui/confirm-delete";
+import { Plus, Trash2, FileText, Eye, Pencil, Search, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Note = {
@@ -26,7 +27,6 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
-// Tiny Markdown renderer — headings, bold, italic, code, links, lists, line breaks.
 function renderMarkdown(md: string): string {
   const lines = md.split("\n");
   const out: string[] = [];
@@ -95,6 +95,8 @@ function timeAgo(iso: string) {
   return `${d}d atrás`;
 }
 
+type SaveStatus = "saved" | "saving" | "dirty";
+
 export function NotesView({ userId }: { userId: string }) {
   const qc = useQueryClient();
   const { data: notes = [] } = useQuery({
@@ -119,7 +121,8 @@ export function NotesView({ userId }: { userId: string }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [subjectId, setSubjectId] = useState<string>("none");
-  const [dirty, setDirty] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selected = notes.find((n) => n.id === selectedId) ?? null;
 
@@ -128,7 +131,7 @@ export function NotesView({ userId }: { userId: string }) {
       setTitle(selected.title);
       setContent(selected.content);
       setSubjectId(selected.subject_id ?? "none");
-      setDirty(false);
+      setSaveStatus("saved");
     }
   }, [selectedId]);
 
@@ -139,6 +142,77 @@ export function NotesView({ userId }: { userId: string }) {
       n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q),
     );
   }, [notes, query]);
+
+  const save = useMutation({
+    mutationFn: async ({ t, c, s }: { t: string; c: string; s: string }) => {
+      if (!selected) return;
+      setSaveStatus("saving");
+      const { error } = await supabase
+        .from("notes")
+        .update({
+          title: t.trim() || "Sem título",
+          content: c,
+          subject_id: s === "none" ? null : s,
+        })
+        .eq("id", selected.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notes"] });
+      setSaveStatus("saved");
+    },
+    onError: () => {
+      setSaveStatus("dirty");
+      toast.error("Erro ao salvar");
+    },
+  });
+
+  const triggerAutoSave = useCallback(
+    (t: string, c: string, s: string) => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      autoSaveTimer.current = setTimeout(() => {
+        save.mutate({ t, c, s });
+      }, 1500);
+    },
+    [save],
+  );
+
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+    setSaveStatus("dirty");
+    triggerAutoSave(val, content, subjectId);
+  };
+
+  const handleContentChange = (val: string) => {
+    setContent(val);
+    setSaveStatus("dirty");
+    triggerAutoSave(title, val, subjectId);
+  };
+
+  const handleSubjectChange = (val: string) => {
+    setSubjectId(val);
+    setSaveStatus("dirty");
+    triggerAutoSave(title, content, val);
+  };
+
+  const handleManualSave = () => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    save.mutate({ t: title, c: content, s: subjectId });
+    toast.success("Anotação salva");
+  };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (selected && saveStatus === "dirty") {
+          handleManualSave();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selected, saveStatus, title, content, subjectId]);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -154,26 +228,6 @@ export function NotesView({ userId }: { userId: string }) {
       qc.invalidateQueries({ queryKey: ["notes"] });
       setSelectedId(n.id);
       setMode("edit");
-    },
-  });
-
-  const save = useMutation({
-    mutationFn: async () => {
-      if (!selected) return;
-      const { error } = await supabase
-        .from("notes")
-        .update({
-          title: title.trim() || "Sem título",
-          content,
-          subject_id: subjectId === "none" ? null : subjectId,
-        })
-        .eq("id", selected.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["notes"] });
-      setDirty(false);
-      toast.success("Anotação salva");
     },
   });
 
@@ -247,14 +301,11 @@ export function NotesView({ userId }: { userId: string }) {
             <div className="p-3 border-b border-border flex items-center gap-2 flex-wrap">
               <Input
                 value={title}
-                onChange={(e) => { setTitle(e.target.value); setDirty(true); }}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Título"
                 className="flex-1 min-w-[180px] border-0 focus-visible:ring-0 font-display text-lg px-0 shadow-none"
               />
-              <Select
-                value={subjectId}
-                onValueChange={(v) => { setSubjectId(v); setDirty(true); }}
-              >
+              <Select value={subjectId} onValueChange={handleSubjectChange}>
                 <SelectTrigger className="w-[160px] h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">— Sem matéria —</SelectItem>
@@ -269,17 +320,44 @@ export function NotesView({ userId }: { userId: string }) {
               >
                 {mode === "edit" ? <Eye className="size-4" /> : <Pencil className="size-4" />}
               </Button>
-              <Button size="sm" onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
-                {dirty ? "Salvar" : "Salvo"}
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => del.mutate(selected.id)}>
-                <Trash2 className="size-4" />
-              </Button>
+
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-[80px] justify-end">
+                {saveStatus === "saving" && (
+                  <>
+                    <Loader2 className="size-3 animate-spin" />
+                    <span>Salvando…</span>
+                  </>
+                )}
+                {saveStatus === "saved" && (
+                  <>
+                    <Check className="size-3 text-green-500" />
+                    <span>Salvo</span>
+                  </>
+                )}
+                {saveStatus === "dirty" && (
+                  <button
+                    onClick={handleManualSave}
+                    className="underline underline-offset-2 hover:text-foreground"
+                    title="Salvar agora (Ctrl+S)"
+                  >
+                    Salvar
+                  </button>
+                )}
+              </div>
+
+              <ConfirmDelete
+                onConfirm={() => del.mutate(selected.id)}
+                description={`Excluir a anotação "${selected.title}"?`}
+              >
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="size-4" />
+                </Button>
+              </ConfirmDelete>
             </div>
             {mode === "edit" ? (
               <Textarea
                 value={content}
-                onChange={(e) => { setContent(e.target.value); setDirty(true); }}
+                onChange={(e) => handleContentChange(e.target.value)}
                 placeholder="# Use Markdown: # título, **negrito**, *itálico*, `código`, - listas, [link](url)"
                 className="flex-1 min-h-[480px] border-0 focus-visible:ring-0 resize-none rounded-none font-mono text-sm leading-relaxed shadow-none"
               />

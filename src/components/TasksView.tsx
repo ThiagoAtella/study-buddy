@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Calendar as CalendarIcon, Flag } from "lucide-react";
+import { ConfirmDelete } from "@/components/ui/confirm-delete";
+import { Plus, Trash2, Calendar as CalendarIcon, Flag, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 type Task = {
@@ -87,9 +88,26 @@ export function TasksView({ userId }: { userId: string }) {
   const [priority, setPriority] = useState("1");
   const [subjectId, setSubjectId] = useState<string>("none");
 
+  const [search, setSearch] = useState("");
+  const [filterPriority, setFilterPriority] = useState<string>("all");
+
   const reset = () => {
     setTitle(""); setDescription(""); setDue(""); setPriority("1"); setSubjectId("none");
   };
+
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(
+        (t) => t.title.toLowerCase().includes(q) || (t.description ?? "").toLowerCase().includes(q),
+      );
+    }
+    if (filterPriority !== "all") {
+      result = result.filter((t) => String(t.priority) === filterPriority);
+    }
+    return result;
+  }, [tasks, search, filterPriority]);
 
   const add = useMutation({
     mutationFn: async () => {
@@ -138,10 +156,12 @@ export function TasksView({ userId }: { userId: string }) {
     if (id) move.mutate({ id, status });
   };
 
+  const hasFilters = search.trim() || filterPriority !== "all";
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-muted-foreground">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <p className="text-muted-foreground text-sm">
           Organize trabalhos, exercícios e entregas. Arraste para mover entre as colunas.
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -192,9 +212,49 @@ export function TasksView({ userId }: { userId: string }) {
         </Dialog>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="size-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar tarefas..."
+            className="pl-9 h-9"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
+        </div>
+        <Select value={filterPriority} onValueChange={setFilterPriority}>
+          <SelectTrigger className="w-[140px] h-9">
+            <SelectValue placeholder="Prioridade" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas</SelectItem>
+            {PRIORITIES.map((p) => <SelectItem key={p.v} value={p.v}>{p.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        {hasFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setSearch(""); setFilterPriority("all"); }}
+            className="text-muted-foreground"
+          >
+            <X className="size-3.5 mr-1" /> Limpar filtros
+          </Button>
+        )}
+      </div>
+
       <div className="grid md:grid-cols-3 gap-4">
         {COLUMNS.map((col) => {
-          const items = tasks.filter((t) => t.status === col.key);
+          const items = filteredTasks.filter((t) => t.status === col.key);
+          const total = tasks.filter((t) => t.status === col.key).length;
           return (
             <div
               key={col.key}
@@ -204,11 +264,15 @@ export function TasksView({ userId }: { userId: string }) {
             >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-display text-lg">{col.label}</h4>
-                <span className="text-xs text-muted-foreground">{items.length}</span>
+                <span className="text-xs text-muted-foreground">
+                  {hasFilters && items.length !== total ? `${items.length}/${total}` : total}
+                </span>
               </div>
               <div className="space-y-2">
                 {items.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">Nenhuma tarefa aqui.</p>
+                  <p className="text-xs text-muted-foreground italic">
+                    {hasFilters ? "Sem resultados." : "Nenhuma tarefa aqui."}
+                  </p>
                 )}
                 {items.map((t) => {
                   const subj = subjects.find((s) => s.id === t.subject_id);
@@ -225,9 +289,14 @@ export function TasksView({ userId }: { userId: string }) {
                         <p className={`text-sm font-medium ${t.status === "done" ? "line-through text-muted-foreground" : ""}`}>
                           {t.title}
                         </p>
-                        <button onClick={() => del.mutate(t.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground">
-                          <Trash2 className="size-3.5" />
-                        </button>
+                        <ConfirmDelete
+                          onConfirm={() => del.mutate(t.id)}
+                          description={`Excluir a tarefa "${t.title}"?`}
+                        >
+                          <button className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-colors">
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </ConfirmDelete>
                       </div>
                       {t.description && (
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{t.description}</p>

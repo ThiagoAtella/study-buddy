@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Trash2, BellRing, LogOut, ExternalLink, Bell, Download } from "lucide-react";
+import { ConfirmDelete } from "@/components/ui/confirm-delete";
 import { toast } from "sonner";
 import { ensureNotificationPermission, startScheduleWatcher } from "@/lib/notifications";
 import { Pomodoro } from "@/components/Pomodoro";
@@ -361,9 +362,14 @@ function SubjectsView({ userId }: { userId: string }) {
                   <span className="text-xs text-muted-foreground">
                     {done}/{subjectTopics.length} tópicos
                   </span>
-                  <Button variant="ghost" size="icon" onClick={() => delSubject.mutate(s.id)}>
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <ConfirmDelete
+                    onConfirm={() => delSubject.mutate(s.id)}
+                    description={`Excluir "${s.name}" e todos os seus tópicos?`}
+                  >
+                    <Button variant="ghost" size="icon">
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </ConfirmDelete>
                 </div>
               </div>
               <TopicsList subjectId={s.id} userId={userId} topics={subjectTopics} />
@@ -410,9 +416,11 @@ function TopicsList({ subjectId, userId, topics }: { subjectId: string; userId: 
           <li key={t.id} className="flex items-center gap-3 group">
             <Checkbox checked={t.completed} onCheckedChange={() => toggle.mutate(t)} />
             <span className={t.completed ? "line-through text-muted-foreground" : ""}>{t.title}</span>
-            <button onClick={() => del.mutate(t.id)} className="ml-auto opacity-0 group-hover:opacity-100">
-              <Trash2 className="size-3.5 text-muted-foreground" />
-            </button>
+            <ConfirmDelete onConfirm={() => del.mutate(t.id)} description={`Excluir o tópico "${t.title}"?`}>
+              <button className="ml-auto opacity-0 group-hover:opacity-100 hover:text-destructive transition-colors">
+                <Trash2 className="size-3.5 text-muted-foreground" />
+              </button>
+            </ConfirmDelete>
           </li>
         ))}
       </ul>
@@ -544,9 +552,14 @@ function ScheduleView({ userId }: { userId: string }) {
                       <div className="font-medium">{(s.start_time as string).slice(0, 5)}</div>
                       <div className="text-muted-foreground text-xs">{s.subject?.name} · {s.duration_minutes}min</div>
                     </div>
-                    <button onClick={() => del.mutate(s.id)} className="opacity-0 group-hover:opacity-100">
-                      <Trash2 className="size-3 text-muted-foreground" />
-                    </button>
+                    <ConfirmDelete
+                      onConfirm={() => del.mutate(s.id)}
+                      description={`Excluir este horário de ${s.subject?.name}?`}
+                    >
+                      <button className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-colors">
+                        <Trash2 className="size-3 text-muted-foreground" />
+                      </button>
+                    </ConfirmDelete>
                   </div>
                 ))}
                 {daySlots.length === 0 && <p className="text-xs text-muted-foreground italic">—</p>}
@@ -648,12 +661,17 @@ function LinksView({ userId }: { userId: string }) {
                   {l.description && <p className="text-sm text-muted-foreground mt-1">{l.description}</p>}
                   {l.subject && <span className="text-xs uppercase tracking-wider mt-2 inline-block" style={{ color: l.subject.color }}>{l.subject.name}</span>}
                 </div>
-                <button
-                  onClick={(e) => { e.preventDefault(); del.mutate(l.id); }}
-                  className="opacity-0 group-hover:opacity-100"
+                <ConfirmDelete
+                  onConfirm={() => del.mutate(l.id)}
+                  description={`Excluir o link "${l.title}"?`}
                 >
-                  <Trash2 className="size-4 text-muted-foreground" />
-                </button>
+                  <button
+                    onClick={(e) => e.preventDefault()}
+                    className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="size-4 text-muted-foreground" />
+                  </button>
+                </ConfirmDelete>
               </div>
             </a>
           ))}

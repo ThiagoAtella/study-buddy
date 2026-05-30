@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2 } from "lucide-react";
+import { ConfirmDelete } from "@/components/ui/confirm-delete";
+import { Trash2, Target } from "lucide-react";
 import { toast } from "sonner";
 
 export function GoalsView({ userId }: { userId: string }) {
@@ -77,11 +78,25 @@ export function GoalsView({ userId }: { userId: string }) {
       </div>
 
       <div className="space-y-3">
-        {goals.length === 0 && <p className="text-muted-foreground italic">Nenhuma meta definida ainda.</p>}
+        {goals.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-14 text-muted-foreground gap-3">
+            <Target className="size-10 opacity-30" />
+            <p className="italic text-sm">Nenhuma meta definida ainda.</p>
+            <p className="text-xs text-center max-w-xs">
+              Defina quantos minutos por semana você quer dedicar a cada matéria.
+            </p>
+          </div>
+        )}
         {goals.map((g: any) => {
           const subj = subjects.find((s: any) => s.id === g.subject_id);
           const done = minutesThisWeek(g.subject_id);
           const pct = Math.min(100, (done / g.minutes_per_week) * 100);
+          const hDone = Math.floor(done / 60);
+          const mDone = done % 60;
+          const hGoal = Math.floor(g.minutes_per_week / 60);
+          const mGoal = g.minutes_per_week % 60;
+          const doneLabel = hDone > 0 ? `${hDone}h${mDone > 0 ? ` ${mDone}min` : ""}` : `${mDone}min`;
+          const goalLabel = hGoal > 0 ? `${hGoal}h${mGoal > 0 ? ` ${mGoal}min` : ""}` : `${mGoal}min`;
           return (
             <div key={g.id} className="border border-border bg-card p-5">
               <div className="flex justify-between mb-2">
@@ -91,15 +106,28 @@ export function GoalsView({ userId }: { userId: string }) {
                 </span>
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">
-                    {done} / {g.minutes_per_week} min
+                    {doneLabel} / {goalLabel}
                   </span>
-                  <button onClick={() => del.mutate(g.id)}><Trash2 className="size-3.5 text-muted-foreground" /></button>
+                  <ConfirmDelete
+                    onConfirm={() => del.mutate(g.id)}
+                    description={`Excluir a meta de "${subj?.name}"?`}
+                  >
+                    <button className="hover:text-destructive transition-colors">
+                      <Trash2 className="size-3.5 text-muted-foreground" />
+                    </button>
+                  </ConfirmDelete>
                 </div>
               </div>
-              <div className="h-2 bg-muted overflow-hidden">
-                <div className="h-full bg-foreground transition-all" style={{ width: `${pct}%` }} />
+              <div className="h-2 bg-muted overflow-hidden rounded-full">
+                <div
+                  className={`h-full transition-all rounded-full ${pct >= 100 ? "bg-green-500" : "bg-foreground"}`}
+                  style={{ width: `${pct}%` }}
+                />
               </div>
-              {pct >= 100 && <p className="text-xs mt-2 italic">Meta atingida! 🎉</p>}
+              <div className="flex items-center justify-between mt-1.5">
+                <span className="text-xs text-muted-foreground">{Math.round(pct)}% da meta</span>
+                {pct >= 100 && <p className="text-xs italic text-green-600 dark:text-green-400">Meta atingida! 🎉</p>}
+              </div>
             </div>
           );
         })}
