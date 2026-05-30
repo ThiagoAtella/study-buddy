@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "GrUpvkBTM9ea5-nCztiAC"
+uri = "file://PRD.md"
+type = "text"
+title = "PRD — Estudo."
