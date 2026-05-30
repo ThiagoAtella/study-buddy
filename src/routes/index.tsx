@@ -22,6 +22,8 @@ import { AiSuggestView } from "@/components/AiSuggestView";
 import { QuizView } from "@/components/QuizView";
 import { TutorView } from "@/components/TutorView";
 import { CalendarView } from "@/components/CalendarView";
+import { TasksView } from "@/components/TasksView";
+import { NotesView } from "@/components/NotesView";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StreakBadge } from "@/components/StreakBadge";
 import { exportAllData } from "@/lib/export";
@@ -113,6 +115,8 @@ function Dashboard() {
           <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 mb-8 gap-6 flex-wrap">
             {[
               ["pomodoro", "Pomodoro"],
+              ["tasks", "Tarefas"],
+              ["notes", "Anotações"],
               ["subjects", "Matérias"],
               ["schedule", "Cronograma"],
               ["calendar", "Calendário"],
@@ -135,6 +139,8 @@ function Dashboard() {
           </TabsList>
 
           <TabsContent value="pomodoro"><Pomodoro userId={user.id} /></TabsContent>
+          <TabsContent value="tasks"><TasksView userId={user.id} /></TabsContent>
+          <TabsContent value="notes"><NotesView userId={user.id} /></TabsContent>
           <TabsContent value="subjects"><SubjectsView userId={user.id} /></TabsContent>
           <TabsContent value="schedule"><ScheduleView userId={user.id} /></TabsContent>
           <TabsContent value="calendar"><CalendarView /></TabsContent>
