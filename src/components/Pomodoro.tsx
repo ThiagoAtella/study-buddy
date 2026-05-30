@@ -109,19 +109,7 @@ export function Pomodoro({ userId }: { userId: string }) {
   const pct = ((total - secondsLeft) / total) * 100;
 
   return (
-    <div className="max-w-lg mx-auto border border-border bg-card p-10 text-center relative">
-      <button
-        onClick={() => {
-          setPendingFocus(String(focusMin));
-          setPendingBreak(String(breakMin));
-          setShowSettings((v) => !v);
-        }}
-        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-        title="Configurar durações"
-      >
-        {showSettings ? <X className="size-4" /> : <Settings2 className="size-4" />}
-      </button>
-
+    <div className="max-w-lg mx-auto border border-border bg-card p-10 text-center">
       {showSettings ? (
         <div className="text-left space-y-4 py-4">
           <h3 className="font-display text-xl text-center mb-2">Configurar Timer</h3>
@@ -174,6 +162,18 @@ export function Pomodoro({ userId }: { userId: string }) {
             </Button>
             <Button onClick={reset} size="lg" variant="outline">
               <RotateCcw className="size-4" /> Reiniciar
+            </Button>
+            <Button
+              onClick={() => {
+                setPendingFocus(String(focusMin));
+                setPendingBreak(String(breakMin));
+                setShowSettings(true);
+              }}
+              size="lg"
+              variant="ghost"
+              title="Configurar durações"
+            >
+              <Settings2 className="size-4" /> Configurar
             </Button>
           </div>
           <p className="mt-6 text-xs text-muted-foreground">
