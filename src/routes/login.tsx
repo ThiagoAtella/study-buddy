@@ -102,7 +102,7 @@ function LoginPage() {
              style={{ backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }} />
         <Link to="/" className="relative">
           <h1 className="font-display text-5xl leading-none">
-            Estudo<span className="italic">.</span>
+            StudyBuddy<span className="italic">.</span>
           </h1>
           <p className="mt-2 text-xs uppercase tracking-[0.25em] text-background/60">
             seu caderno digital
@@ -120,14 +120,14 @@ function LoginPage() {
           </ul>
         </div>
 
-        <p className="relative text-xs text-background/40">© {new Date().getFullYear()} Estudo</p>
+        <p className="relative text-xs text-background/40">© {new Date().getFullYear()} StudyBuddy</p>
       </aside>
 
       {/* Coluna direita */}
       <main className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           <Link to="/" className="lg:hidden block text-center mb-10">
-            <h1 className="font-display text-5xl">Estudo<span className="italic">.</span></h1>
+            <h1 className="font-display text-5xl">StudyBuddy<span className="italic">.</span></h1>
             <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">seu caderno digital</p>
           </Link>
 

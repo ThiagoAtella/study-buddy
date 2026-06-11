@@ -68,7 +68,7 @@ function ResetPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <Link to="/" className="block text-center mb-10">
-          <h1 className="font-display text-5xl">Estudo<span className="italic">.</span></h1>
+          <h1 className="font-display text-5xl">StudyBuddy<span className="italic">.</span></h1>
         </Link>
 
         <div className="border border-border bg-card p-8">
