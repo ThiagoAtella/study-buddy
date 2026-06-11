@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -111,48 +111,126 @@ function Dashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <Tabs defaultValue="pomodoro">
-          <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 mb-8 gap-6 flex-wrap">
-            {[
-              ["pomodoro", "Pomodoro"],
-              ["tasks", "Tarefas"],
-              ["notes", "Anotações"],
-              ["subjects", "Matérias"],
-              ["schedule", "Cronograma"],
-              ["calendar", "Calendário"],
-              ["goals", "Metas"],
-              ["flashcards", "Flashcards"],
-              ["quiz", "Quiz"],
-              ["tutor", "Tutor IA"],
-              ["stats", "Estatísticas"],
-              ["ai", "Sugestões"],
-              ["links", "Recomendações"],
-            ].map(([v, l]) => (
-              <TabsTrigger
-                key={v}
-                value={v}
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:shadow-none bg-transparent px-0 pb-3 font-display text-lg"
-              >
-                {l}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <TabsContent value="pomodoro"><Pomodoro userId={user.id} /></TabsContent>
-          <TabsContent value="tasks"><TasksView userId={user.id} /></TabsContent>
-          <TabsContent value="notes"><NotesView userId={user.id} /></TabsContent>
-          <TabsContent value="subjects"><SubjectsView userId={user.id} /></TabsContent>
-          <TabsContent value="schedule"><ScheduleView userId={user.id} /></TabsContent>
-          <TabsContent value="calendar"><CalendarView /></TabsContent>
-          <TabsContent value="goals"><GoalsView userId={user.id} /></TabsContent>
-          <TabsContent value="flashcards"><FlashcardsView userId={user.id} /></TabsContent>
-          <TabsContent value="quiz"><QuizView /></TabsContent>
-          <TabsContent value="tutor"><TutorView /></TabsContent>
-          <TabsContent value="stats"><StatsView /></TabsContent>
-          <TabsContent value="ai"><AiSuggestView userId={user.id} /></TabsContent>
-          <TabsContent value="links"><LinksView userId={user.id} /></TabsContent>
-        </Tabs>
+        <GroupedTabs userId={user.id} />
       </main>
+    </div>
+  );
+}
+
+/* ---------- Tabs agrupadas com side panel ---------- */
+const TAB_GROUPS = [
+  {
+    id: "foco",
+    label: "Foco",
+    subs: [
+      { id: "pomodoro", label: "Pomodoro" },
+      { id: "schedule", label: "Cronograma" },
+      { id: "calendar", label: "Calendário" },
+    ],
+  },
+  {
+    id: "organizacao",
+    label: "Organização",
+    subs: [
+      { id: "subjects", label: "Matérias" },
+      { id: "tasks", label: "Tarefas" },
+      { id: "notes", label: "Anotações" },
+    ],
+  },
+  {
+    id: "aprendizado",
+    label: "Aprendizado",
+    subs: [
+      { id: "flashcards", label: "Flashcards" },
+      { id: "quiz", label: "Quiz" },
+      { id: "tutor", label: "Tutor IA" },
+      { id: "ai", label: "Sugestões" },
+    ],
+  },
+  {
+    id: "progresso",
+    label: "Progresso",
+    subs: [
+      { id: "goals", label: "Metas" },
+      { id: "stats", label: "Estatísticas" },
+    ],
+  },
+  {
+    id: "recursos",
+    label: "Recursos",
+    subs: [{ id: "links", label: "Recomendações" }],
+  },
+] as const;
+
+function GroupedTabs({ userId }: { userId: string }) {
+  const [group, setGroup] = useState<string>(TAB_GROUPS[0].id);
+  const current = TAB_GROUPS.find((g) => g.id === group) ?? TAB_GROUPS[0];
+  const [sub, setSub] = useState<string>(current.subs[0].id);
+
+  const handleGroup = (g: string) => {
+    setGroup(g);
+    const next = TAB_GROUPS.find((x) => x.id === g);
+    if (next) setSub(next.subs[0].id);
+  };
+
+  const renderSub = (id: string) => {
+    switch (id) {
+      case "pomodoro": return <Pomodoro userId={userId} />;
+      case "schedule": return <ScheduleView userId={userId} />;
+      case "calendar": return <CalendarView />;
+      case "subjects": return <SubjectsView userId={userId} />;
+      case "tasks": return <TasksView userId={userId} />;
+      case "notes": return <NotesView userId={userId} />;
+      case "flashcards": return <FlashcardsView userId={userId} />;
+      case "quiz": return <QuizView />;
+      case "tutor": return <TutorView />;
+      case "ai": return <AiSuggestView userId={userId} />;
+      case "goals": return <GoalsView userId={userId} />;
+      case "stats": return <StatsView />;
+      case "links": return <LinksView userId={userId} />;
+      default: return null;
+    }
+  };
+
+  return (
+    <div>
+      <nav className="border-b border-border mb-8 flex flex-wrap gap-6">
+        {TAB_GROUPS.map((g) => (
+          <button
+            key={g.id}
+            onClick={() => handleGroup(g.id)}
+            className={`pb-3 font-display text-lg border-b-2 transition-colors ${
+              group === g.id
+                ? "border-foreground text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {g.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="grid gap-8 md:grid-cols-[200px_minmax(0,1fr)]">
+        <aside className="md:border-r md:border-border md:pr-6">
+          <ul className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+            {current.subs.map((s) => (
+              <li key={s.id} className="shrink-0">
+                <button
+                  onClick={() => setSub(s.id)}
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors ${
+                    sub === s.id
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </aside>
+        <section className="min-w-0">{renderSub(sub)}</section>
+      </div>
     </div>
   );
 }
