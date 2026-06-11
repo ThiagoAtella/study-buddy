@@ -81,7 +81,7 @@ function Dashboard() {
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
           <div>
-            <h1 className="font-display text-3xl leading-none">Estudo<span className="italic">.</span></h1>
+            <h1 className="font-display text-3xl leading-none">StudyBuddy<span className="italic">.</span></h1>
             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mt-1">
               {user.email}
             </p>

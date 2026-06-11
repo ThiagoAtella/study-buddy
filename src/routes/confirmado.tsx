@@ -39,7 +39,7 @@ function ConfirmedPage() {
       <div className="w-full max-w-md text-center">
         <Link to="/" className="block mb-10">
           <h1 className="font-display text-5xl">
-            Estudo<span className="italic">.</span>
+            StudyBuddy<span className="italic">.</span>
           </h1>
         </Link>
 
