@@ -77,16 +77,28 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-3xl leading-none">StudyBuddy<span className="italic">.</span></h1>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mt-1">
+    <div className="min-h-screen bg-background relative">
+      {/* fundo decorativo sutil */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] -z-0 opacity-[0.55]"
+        style={{
+          background:
+            "radial-gradient(60% 60% at 50% 0%, color-mix(in oklab, var(--primary) 12%, transparent) 0%, transparent 70%)",
+        }}
+      />
+
+      <header className="sticky top-0 z-20 backdrop-blur-md bg-background/75 border-b border-border">
+        <div className="max-w-5xl mx-auto px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground truncate">
               {user.email}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <h1 className="font-display text-3xl leading-none text-center">
+            StudyBuddy<span className="italic text-primary">.</span>
+          </h1>
+          <div className="flex items-center justify-end gap-1.5">
             <StreakBadge />
             <Button
               variant={notifGranted ? "secondary" : "default"}
@@ -95,9 +107,6 @@ function Dashboard() {
               title="Ativar notificações"
             >
               {notifGranted ? <BellRing className="size-4" /> : <Bell className="size-4" />}
-              <span className="ml-2 hidden sm:inline">
-                {notifGranted ? "Notificações ativas" : "Ativar avisos"}
-              </span>
             </Button>
             <Button variant="ghost" size="icon" onClick={exportAllData} title="Exportar dados (CSV)">
               <Download className="size-4" />
@@ -110,7 +119,7 @@ function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="relative max-w-5xl mx-auto px-6 py-12">
         <GroupedTabs userId={user.id} />
       </main>
     </div>
@@ -173,6 +182,8 @@ function GroupedTabs({ userId }: { userId: string }) {
     if (next) setSub(next.subs[0].id);
   };
 
+  const currentSubLabel = current.subs.find((s) => s.id === sub)?.label ?? "";
+
   const renderSub = (id: string) => {
     switch (id) {
       case "pomodoro": return <Pomodoro userId={userId} />;
@@ -194,46 +205,72 @@ function GroupedTabs({ userId }: { userId: string }) {
 
   return (
     <div>
-      <nav className="border-b border-border mb-8 flex flex-wrap gap-6">
-        {TAB_GROUPS.map((g) => (
-          <button
-            key={g.id}
-            onClick={() => handleGroup(g.id)}
-            className={`pb-3 font-display text-lg border-b-2 transition-colors ${
-              group === g.id
-                ? "border-foreground text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {g.label}
-          </button>
-        ))}
+      {/* Grupos — chips centralizados */}
+      <nav className="mb-10 flex justify-center">
+        <div className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-border bg-card/60 backdrop-blur px-1.5 py-1.5 shadow-sm">
+          {TAB_GROUPS.map((g) => (
+            <button
+              key={g.id}
+              onClick={() => handleGroup(g.id)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                group === g.id
+                  ? "bg-foreground text-background shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
       </nav>
 
-      <div className="grid gap-8 md:grid-cols-[200px_minmax(0,1fr)]">
-        <aside className="md:border-r md:border-border md:pr-6">
-          <ul className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
-            {current.subs.map((s) => (
-              <li key={s.id} className="shrink-0">
-                <button
-                  onClick={() => setSub(s.id)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors ${
-                    sub === s.id
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              </li>
-            ))}
+      <div className="grid gap-10 md:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="md:sticky md:top-24 md:self-start">
+          <p className="hidden md:block text-[10px] uppercase tracking-[0.22em] text-muted-foreground mb-3 px-3">
+            {current.label}
+          </p>
+          <ul className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible -mx-1 px-1">
+            {current.subs.map((s) => {
+              const active = sub === s.id;
+              return (
+                <li key={s.id} className="shrink-0">
+                  <button
+                    onClick={() => setSub(s.id)}
+                    className={`group/sub relative w-full text-left pl-4 pr-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors ${
+                      active
+                        ? "bg-muted text-foreground font-medium"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r transition-all ${
+                        active ? "bg-foreground" : "bg-transparent"
+                      }`}
+                    />
+                    {s.label}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </aside>
-        <section className="min-w-0">{renderSub(sub)}</section>
+
+        <section className="min-w-0">
+          <div className="mb-6 flex items-baseline justify-between gap-4 border-b border-border pb-4">
+            <h2 className="font-display text-2xl md:text-3xl truncate">{currentSubLabel}</h2>
+            <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground shrink-0">
+              {current.label}
+            </span>
+          </div>
+          <div key={sub} className="animate-in fade-in slide-in-from-bottom-1 duration-300">
+            {renderSub(sub)}
+          </div>
+        </section>
       </div>
     </div>
   );
 }
+
 
 /* ---------- Matérias + Tópicos ---------- */
 function SubjectsView({ userId }: { userId: string }) {
