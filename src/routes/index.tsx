@@ -27,6 +27,7 @@ import { TasksView } from "@/components/TasksView";
 import { NotesView } from "@/components/NotesView";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { StreakBadge } from "@/components/StreakBadge";
+import { TodayOverview } from "@/components/TodayOverview";
 import { exportAllData } from "@/lib/export";
 
 export const Route = createFileRoute("/")({
@@ -121,6 +122,7 @@ function Dashboard() {
       </header>
 
       <main className="relative max-w-5xl mx-auto px-6 py-12">
+        <TodayOverview userId={user.id} />
         <GroupedTabs userId={user.id} />
       </main>
     </div>
