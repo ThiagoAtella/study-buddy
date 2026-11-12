@@ -2,6 +2,8 @@
 
 Plataforma web para organizar seus estudos — do planejamento à revisão — com inteligência artificial integrada.
 
+> 🎓 Projeto criado como **MVP para o curso AI Builder da Conquer**.
+
 🔗 **Demo:** https://study-spark-reminder.lovable.app
 
 ![React](https://img.shields.io/badge/React-19-61dafb) ![TanStack Start](https://img.shields.io/badge/TanStack-Start-ff4154) ![Tailwind](https://img.shields.io/badge/Tailwind-v4-38bdf8) ![Bun](https://img.shields.io/badge/Bun-runtime-black)
