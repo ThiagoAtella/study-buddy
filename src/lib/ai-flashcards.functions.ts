@@ -28,7 +28,7 @@ const GenInput = z.object({
 
 export const generateFlashcards = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) => GenInput.parse(d))
+  .inputValidator((d) => GenInput.parse(d))
   .handler(async ({ data, context }) => {
     const json = await callGateway({
       model: MODEL,
@@ -87,7 +87,7 @@ const ExplainInput = z.object({
 
 export const explainFlashcard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) => ExplainInput.parse(d))
+  .inputValidator((d) => ExplainInput.parse(d))
   .handler(async ({ data }) => {
     const json = await callGateway({
       model: MODEL,
@@ -109,7 +109,7 @@ const QuizInput = z.object({
 
 export const generateQuiz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) => QuizInput.parse(d))
+  .inputValidator((d) => QuizInput.parse(d))
   .handler(async ({ data }) => {
     const json = await callGateway({
       model: MODEL,
@@ -156,7 +156,7 @@ const GradeInput = z.object({
 
 export const gradeAnswer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) => GradeInput.parse(d))
+  .inputValidator((d) => GradeInput.parse(d))
   .handler(async ({ data }) => {
     const json = await callGateway({
       model: MODEL,
@@ -198,7 +198,7 @@ const TutorInput = z.object({
 
 export const tutorChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) => TutorInput.parse(d))
+  .inputValidator((d) => TutorInput.parse(d))
   .handler(async ({ data }) => {
     const system = `Você é um tutor de estudos paciente, didático e direto, em pt-BR.${
       data.subjectName ? ` Foco da conversa: ${data.subjectName}.` : ""
